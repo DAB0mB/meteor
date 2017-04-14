@@ -44,7 +44,7 @@ if (Meteor.isCordova) {
   document.addEventListener('deviceready', releaseReadyHold, false);
 }
 
-if (document.readyState === 'complete' || document.readyState === 'loaded') {
+if (Meteor.isNative || document.readyState === 'complete' || document.readyState === 'loaded') {
   // Loading has completed,
   // but allow other scripts the opportunity to hold ready
   window.setTimeout(loadingCompleted);

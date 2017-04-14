@@ -3,5 +3,3 @@ require("./stubs.js");
 require("./buffer.js");
 require("./process.js");
 require("./reify.js");
-
-exports.addStyles = require("./css").addStyles;

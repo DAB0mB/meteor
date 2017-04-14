@@ -24,7 +24,9 @@ Package.onUse(function (api) {
   api.addFiles('global.js', ['client', 'server']);
   api.export('global');
 
-  api.addFiles('client_environment.js', 'client');
+  // TODO: Handle dedicated output dir
+  api.addFiles('native_environment.js', 'client');
+  /* api.addFiles('client_environment.js', 'client'); */
   api.addFiles('server_environment.js', 'server');
   // Defined by client_environment.js and server_environment.js.
   api.export("meteorEnv");

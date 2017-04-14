@@ -156,35 +156,35 @@ _.extend(LivedataTest.ClientStream.prototype, {
     self._cleanup(); // cleanup the old socket, if there was one.
 
     var options = _.extend({
-      protocols_whitelist:self._sockjsProtocolsWhitelist()
+      protocols:self._sockjsProtocolsWhitelist()
     }, self.options._sockjsOptions);
 
     // Convert raw URL to SockJS URL each time we open a connection, so that we
     // can connect to random hostnames and get around browser per-host
     // connection limits.
-    self.socket = new SockJS(toSockjsUrl(self.rawUrl), undefined, options);
-    self.socket.onopen = function (data) {
+    self.socket = SocketIO(toSockjsUrl(self.rawUrl), options);
+    self.socket.on("open", function (data) {
       self._connected();
-    };
-    self.socket.onmessage = function (data) {
+    });
+    self.socket.on("message", function (data) {
       self._heartbeat_received();
 
       if (self.currentStatus.connected)
         _.each(self.eventCallbacks.message, function (callback) {
           callback(data.data);
         });
-    };
-    self.socket.onclose = function () {
+    });
+    self.socket.on("close", function () {
       self._lostConnection();
-    };
-    self.socket.onerror = function () {
+    });
+    self.socket.on("error", function () {
       // XXX is this ever called?
       Meteor._debug("stream error", _.toArray(arguments), (new Date()).toDateString());
-    };
+    });
 
-    self.socket.onheartbeat =  function () {
+    self.socket.on("heartbeat", function () {
       self._heartbeat_received();
-    };
+    });
 
     if (self.connectionTimer)
       clearTimeout(self.connectionTimer);
