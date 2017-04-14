@@ -156,7 +156,7 @@ _.extend(LivedataTest.ClientStream.prototype, {
     self._cleanup(); // cleanup the old socket, if there was one.
 
     var options = _.extend({
-      protocols:self._sockjsProtocolsWhitelist()
+      transports:self._sockjsProtocolsWhitelist()
     }, self.options._sockjsOptions);
 
     // Convert raw URL to SockJS URL each time we open a connection, so that we
