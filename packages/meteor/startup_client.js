@@ -69,7 +69,7 @@ if (Meteor.isNative || document.readyState === 'complete' || document.readyState
  */
 Meteor.startup = function (callback) {
   // Fix for < IE9, see http://javascript.nwbox.com/IEContentLoaded/
-  var doScroll = !document.addEventListener &&
+  var doScroll = !Meteor.isNative && !document.addEventListener &&
     document.documentElement.doScroll;
 
   if (!doScroll || window !== top) {
