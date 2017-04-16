@@ -166,7 +166,7 @@ _.extend(LivedataTest.ClientStream.prototype, {
     }, self.options._sockjsOptions);
 
     self.socket = SocketIO(sockjsUrl.join("/"), options);
-    self.socket.on("open", function (data) {
+    self.socket.on("connect", function (data) {
       self._connected();
     });
     self.socket.on("message", function (data) {
@@ -174,10 +174,10 @@ _.extend(LivedataTest.ClientStream.prototype, {
 
       if (self.currentStatus.connected)
         _.each(self.eventCallbacks.message, function (callback) {
-          callback(data.data);
+          callback(data);
         });
     });
-    self.socket.on("close", function () {
+    self.socket.on("disconnect", function () {
       self._lostConnection();
     });
     self.socket.on("error", function () {
@@ -185,7 +185,7 @@ _.extend(LivedataTest.ClientStream.prototype, {
       Meteor._debug("stream error", _.toArray(arguments), (new Date()).toDateString());
     });
 
-    self.socket.on("heartbeat", function () {
+    self.socket.on("pong", function () {
       self._heartbeat_received();
     });
 
