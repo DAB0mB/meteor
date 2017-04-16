@@ -1,30 +1,5 @@
 var url = Npm.require('url');
 
-// By default, we use the permessage-deflate extension with default
-// configuration. If $SERVER_WEBSOCKET_COMPRESSION is set, then it must be valid
-// JSON. If it represents a falsey value, then we do not use permessage-deflate
-// at all; otherwise, the JSON value is used as an argument to deflate's
-// configure method; see
-// https://github.com/faye/permessage-deflate-node/blob/master/README.md
-//
-// (We do this in an _.once instead of at startup, because we don't want to
-// crash the tool during isopacket load if your JSON doesn't parse. This is only
-// a problem because the tool has to load the DDP server code just in order to
-// be a DDP client; see https://github.com/meteor/meteor/issues/3452 .)
-var websocketExtensions = _.once(function () {
-  var extensions = [];
-
-  var websocketCompressionConfig = process.env.SERVER_WEBSOCKET_COMPRESSION
-        ? JSON.parse(process.env.SERVER_WEBSOCKET_COMPRESSION) : {};
-  if (websocketCompressionConfig) {
-    extensions.push(Npm.require('permessage-deflate').configure(
-      websocketCompressionConfig
-    ));
-  }
-
-  return extensions;
-});
-
 var pathPrefix = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX ||  "";
 
 StreamServer = function () {
@@ -38,24 +13,23 @@ StreamServer = function () {
   RoutePolicy.declare(self.prefix + '/', 'network');
 
   // set up sockjs
-  var sockjs = Npm.require('sockjs');
+  var SocketioServer = Npm.require('socket.io');
   var serverOptions = {
-    prefix: self.prefix,
-    log: function() {},
+    path: self.prefix,
     // this is the default, but we code it explicitly because we depend
     // on it in stream_client:HEARTBEAT_TIMEOUT
-    heartbeat_delay: 45000,
+    heartbeatInterval: 45000,
     // The default disconnect_delay is 5 seconds, but if the server ends up CPU
     // bound for that much time, SockJS might not notice that the user has
     // reconnected because the timer (of disconnect_delay ms) can fire before
     // SockJS processes the new connection. Eventually we'll fix this by not
     // combining CPU-heavy processing with SockJS termination (eg a proxy which
     // converts to Unix sockets) but for now, raise the delay.
-    disconnect_delay: 60 * 1000,
+    pingTimeout: 60 * 1000,
     // Set the USE_JSESSIONID environment variable to enable setting the
     // JSESSIONID cookie. This is useful for setting up proxies with
     // session affinity.
-    jsessionid: !!process.env.USE_JSESSIONID
+    cookie: !!process.env.USE_JSESSIONID
   };
 
   // If you know your server environment (eg, proxies) will prevent websockets
@@ -63,14 +37,11 @@ StreamServer = function () {
   // browsers) will not waste time attempting to use them.
   // (Your server will still have a /websocket endpoint.)
   if (process.env.DISABLE_WEBSOCKETS) {
-    serverOptions.websocket = false;
+    serverOptions.transports = ['polling'];
   } else {
-    serverOptions.faye_server_options = {
-      extensions: websocketExtensions()
-    };
+    serverOptions.transports = ['websocket'];
   }
 
-  self.server = sockjs.createServer(serverOptions);
 
   // Install the sockjs handlers, but we want to keep around our own particular
   // request handler that adjusts idle timeouts while we have an outstanding
@@ -78,7 +49,7 @@ StreamServer = function () {
   // for "request" to add its own.
   WebApp.httpServer.removeListener(
     'request', WebApp._timeoutAdjustmentRequestCallback);
-  self.server.installHandlers(WebApp.httpServer);
+  self.server = new SocketioServer(WebApp.httpServer, serverOptions);
   WebApp.httpServer.addListener(
     'request', WebApp._timeoutAdjustmentRequestCallback);
 

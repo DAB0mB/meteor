@@ -5,8 +5,7 @@ Package.describe({
 });
 
 Npm.depends({
-  "permessage-deflate": "0.1.5",
-  sockjs: "0.3.17"
+  "socket.io": "1.7.3"
 });
 
 Package.onUse(function (api) {

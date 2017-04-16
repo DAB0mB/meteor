@@ -155,14 +155,17 @@ _.extend(LivedataTest.ClientStream.prototype, {
     var self = this;
     self._cleanup(); // cleanup the old socket, if there was one.
 
-    var options = _.extend({
-      transports:self._sockjsProtocolsWhitelist()
-    }, self.options._sockjsOptions);
-
     // Convert raw URL to SockJS URL each time we open a connection, so that we
     // can connect to random hostnames and get around browser per-host
     // connection limits.
-    self.socket = SocketIO(toSockjsUrl(self.rawUrl), options);
+    var sockjsUrl = toSockjsUrl(self.rawUrl).split("/");
+
+    var options = _.extend({
+      transports: self._sockjsProtocolsWhitelist(),
+      path: "/" + sockjsUrl.pop()
+    }, self.options._sockjsOptions);
+
+    self.socket = SocketIO(sockjsUrl.join("/").slice(0, -1), options);
     self.socket.on("open", function (data) {
       self._connected();
     });
