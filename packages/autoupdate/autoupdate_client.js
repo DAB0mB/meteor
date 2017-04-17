@@ -76,7 +76,7 @@ Autoupdate._retrySubscription = function () {
       });
     },
     onReady: function () {
-      if (Package.reload) {
+      if (!Meteor.isNative && Package.reload) {
         var checkNewVersionDocument = function (doc) {
           var self = this;
           if (doc._id === 'version-refreshable' &&

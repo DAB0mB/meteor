@@ -47,7 +47,7 @@ _.extend(LivedataTest.ClientStream.prototype, {
   send: function (data) {
     var self = this;
     if (self.currentStatus.connected) {
-      self.socket.send(data);
+      self.socket.emit('data', data);
     }
   },
 

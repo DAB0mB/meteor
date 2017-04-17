@@ -36,7 +36,8 @@ Meteor = {
    * @type {Boolean}
    */
   isServer: false,
-  isCordova: false
+  isCordova: false,
+  isNative: true
 };
 
 if (typeof __meteor_runtime_config__ === 'object' &&

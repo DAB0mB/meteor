@@ -291,7 +291,7 @@ var Session = function (server, version, socket, options) {
       }
     },
     clientAddress: self._clientAddress(),
-    httpHeaders: self.socket.headers
+    httpHeaders: self.socket.client.request.headers
   };
 
   self.send({ msg: 'connected', session: self.id });
@@ -436,7 +436,7 @@ _.extend(Session.prototype, {
     }
 
     if (self.socket) {
-      self.socket.close();
+      self.socket.disconnect();
       self.socket._meteorSession = null;
     }
 
@@ -910,9 +910,9 @@ _.extend(Session.prototype, {
     var httpForwardedCount = parseInt(process.env['HTTP_FORWARDED_COUNT']) || 0;
 
     if (httpForwardedCount === 0)
-      return self.socket.remoteAddress;
+      return self.socket.client.conn.remoteAddress;
 
-    var forwardedFor = self.socket.headers["x-forwarded-for"];
+    var forwardedFor = self.socket.client.request.headers["x-forwarded-for"];
     if (! _.isString(forwardedFor))
       return null;
     forwardedFor = forwardedFor.trim().split(/\s*,\s*/);
@@ -1393,7 +1393,7 @@ Server = function (options) {
       }
     });
 
-    socket.on('close', function () {
+    socket.on('disconnect', function () {
       if (socket._meteorSession) {
         Fiber(function () {
           socket._meteorSession.close();

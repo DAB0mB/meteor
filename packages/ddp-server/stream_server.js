@@ -56,7 +56,7 @@ StreamServer = function () {
   // Support the /websocket endpoint
   self._redirectWebsocketEndpoint();
 
-  self.server.on('connection', function (socket) {
+  self.server.on('connect', function (socket) {
     // We want to make sure that if a client connects to us and does the initial
     // Websocket handshake but never gets to the DDP handshake, that we
     // eventually kill the socket.  Once the DDP handshake happens, DDP
@@ -79,7 +79,7 @@ StreamServer = function () {
     socket.send = function (data) {
       socket.write(data);
     };
-    socket.on('close', function () {
+    socket.on('disconnect', function () {
       self.open_sockets = _.without(self.open_sockets, socket);
     });
     self.open_sockets.push(socket);
