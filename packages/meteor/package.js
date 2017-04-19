@@ -1,6 +1,7 @@
 // All other packages automatically depend on this one
 
 Package.describe({
+  name: 'meteor',
   summary: "Core Meteor environment",
   version: '1.6.1'
 });
